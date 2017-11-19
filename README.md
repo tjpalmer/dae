@@ -34,10 +34,7 @@ easy to sandbox in browsers today (prohibit outbound net access) for security.
 
 ## Baby steps
 
-I need to figure out how to build Wasm code that calls browser features to
-implement a baseline API.
-
-Hello world to the console is a good start.
+I've got something that can run wasm and receive a call in js now.
 
 
 ## Outbound messages
@@ -57,3 +54,34 @@ Messages typed without data from the application itself or sent from a
 controlled message sender are likely safe ...
 
 Is data taint tracking work anything?
+
+
+## Various references
+
+I think I want llvm rather than emscripten for small output and such.
+But I've got emscripten working so far, or else I've used online llvm-based
+tools.
+I'll need to build llvm and other tools manually perhaps if I want to use wasm
+there perhaps.
+Two issues with emsdk so far include:
+
+- Larger files
+- Symbols prefixed with underscore
+
+Here are some command lines for emscripten (and --emit-symbol-map doesn't seem
+to emit what I want):
+
+```
+emcc -s WASM=1 hello.cpp -o hello.html -g
+emcc -s WASM=1 -s SIDE_MODULE=1 hello.cpp -o hello.wasm -g
+```
+
+Anyway, here are some references for both emsdk and llvm:
+
+- https://github.com/kripken/emscripten/wiki/WebAssembly
+- https://github.com/kripken/emscripten/issues/5384
+- https://github.com/wasdk/wasmexplorer-service/blob/master/scripts/compile.sh
+- http://blog.golovin.in/how-to-start-using-webassembly-today/
+- https://stackoverflow.com/questions/45146099/how-do-i-compile-a-c-file-to-webassembly
+- https://gist.github.com/yurydelendik/4eeff8248aeb14ce763e
+- https://github.com/WebAssembly/wasm-jit-prototype

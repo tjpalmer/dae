@@ -4,7 +4,7 @@ declare let WebAssembly: any;
 
 async function main() {
   let path = 'wasm/hello/hello.wasm';
-  let api = {env: {log: (address: number) => {
+  let api = {env: {log(address: number) {
     // console.log(address);
     let bytes = new Uint8Array(buffer).slice(address);
     let size = bytes.indexOf(0);
