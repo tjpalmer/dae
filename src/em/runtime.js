@@ -13,18 +13,15 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
-declare let Module: any;
+// var Module;
 if (!Module) Module = (typeof Module !== 'undefined' ? Module : null) || {};
-
-type Int = number;
-type Address = Int;
 
 // Sometimes an existing Module object exists with properties
 // meant to overwrite the default module functionality. Here
 // we collect those properties and reapply _after_ we configure
 // the current environment's defaults to avoid having to be so
 // defensive during initialization.
-var moduleOverrides: any = {};
+var moduleOverrides = {};
 for (var key in Module) {
   if (Module.hasOwnProperty(key)) {
     moduleOverrides[key] = Module[key];
@@ -58,172 +55,56 @@ if (Module['ENVIRONMENT']) {
 } else {
   ENVIRONMENT_IS_WEB = typeof window === 'object';
   ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
-  // ENVIRONMENT_IS_NODE = typeof process === 'object' && typeof require === 'function' && !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_WORKER;
-  ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
+  ENVIRONMENT_IS_NODE = false;
+  ENVIRONMENT_IS_SHELL = false;
 }
 
 
-if (ENVIRONMENT_IS_NODE) {
-  // Expose functionality in the same simple way that the shells work
-  // Note that we pollute the global namespace here, otherwise we break in node
-  if (!Module['print']) Module['print'] = console.log;
-  if (!Module['printErr']) Module['printErr'] = console.warn;
+if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
 
-  // var nodeFS;
-  // var nodePath;
-
-  // Module['read'] = function shell_read(filename, binary) {
-  //   if (!nodeFS) nodeFS = require('fs');
-  //   if (!nodePath) nodePath = require('path');
-  //   filename = nodePath['normalize'](filename);
-  //   var ret = nodeFS['readFileSync'](filename);
-  //   return binary ? ret : ret.toString();
-  // };
-
-  // Module['readBinary'] = function readBinary(filename) {
-  //   var ret = Module['read'](filename, true);
-  //   if (!ret.buffer) {
-  //     ret = new Uint8Array(ret);
-  //   }
-  //   assert(ret.buffer);
-  //   return ret;
-  // };
-
-  // Module['load'] = function load(f) {
-  //   globalEval(read(f));
-  // };
-
-  // if (!Module['thisProgram']) {
-  //   if (process['argv'].length > 1) {
-  //     Module['thisProgram'] = process['argv'][1].replace(/\\/g, '/');
-  //   } else {
-  //     Module['thisProgram'] = 'unknown-program';
-  //   }
-  // }
-
-  // Module['arguments'] = process['argv'].slice(2);
-
-  // if (typeof module !== 'undefined') {
-  //   module['exports'] = Module;
-  // }
-
-  // process['on']('uncaughtException', function(ex) {
-  //   // suppress ExitStatus exceptions from showing an error
-  //   if (!(ex instanceof ExitStatus)) {
-  //     throw ex;
-  //   }
-  // });
-
-  Module['inspect'] = function () { return '[Emscripten Module object]'; };
-}
-else if (ENVIRONMENT_IS_SHELL) {
-  if (!Module['print']) Module['print'] = print;
-  // if (typeof printErr != 'undefined') Module['printErr'] = printErr; // not present in v8 or older sm
-
-  // if (typeof read != 'undefined') {
-  //   Module['read'] = read;
-  // } else {
-  //   Module['read'] = function shell_read() { throw 'no read() available' };
-  // }
-
-  // Module['readBinary'] = function readBinary(f) {
-  //   if (typeof readbuffer === 'function') {
-  //     return new Uint8Array(readbuffer(f));
-  //   }
-  //   var data = read(f, 'binary');
-  //   assert(typeof data === 'object');
-  //   return data;
-  // };
-
-  // if (typeof scriptArgs != 'undefined') {
-  //   Module['arguments'] = scriptArgs;
-  // } else if (typeof arguments != 'undefined') {
-  //   Module['arguments'] = arguments;
-  // }
-
-  // if (typeof quit === 'function') {
-  //   Module['quit'] = function(status, toThrow) {
-  //     quit(status);
-  //   }
-  // }
-
-}
-else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  // Module['read'] = function shell_read(url) {
-  //   var xhr = new XMLHttpRequest();
-  //   xhr.open('GET', url, false);
-  //   xhr.send(null);
-  //   return xhr.responseText;
-  // };
-
-  // if (ENVIRONMENT_IS_WORKER) {
-  //   Module['readBinary'] = function readBinary(url) {
-  //     var xhr = new XMLHttpRequest();
-  //     xhr.open('GET', url, false);
-  //     xhr.responseType = 'arraybuffer';
-  //     xhr.send(null);
-  //     return new Uint8Array(xhr.response);
-  //   };
-  // }
-
-  // Module['readAsync'] = function readAsync(url, onload, onerror) {
-  //   var xhr = new XMLHttpRequest();
-  //   xhr.open('GET', url, true);
-  //   xhr.responseType = 'arraybuffer';
-  //   xhr.onload = function xhr_onload() {
-  //     if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-  //       onload(xhr.response);
-  //     } else {
-  //       onerror();
-  //     }
-  //   };
-  //   xhr.onerror = onerror;
-  //   xhr.send(null);
-  // };
-
-  // if (typeof arguments != 'undefined') {
-  //   Module['arguments'] = arguments;
-  // }
+  if (typeof arguments != 'undefined') {
+    // Module['arguments'] = arguments;
+    Module['arguments'] = [];
+  }
 
   if (typeof console !== 'undefined') {
-    if (!Module['print']) Module['print'] = function shell_print(x: any) {
+    if (!Module['print']) Module['print'] = function shell_print(x) {
       console.log(x);
     };
-    if (!Module['printErr']) Module['printErr'] = function shell_printErr(x: any) {
+    if (!Module['printErr']) Module['printErr'] = function shell_printErr(x) {
       console.warn(x);
     };
   } else {
     // Probably a worker, and without console.log. We can do very little here...
     var TRY_USE_DUMP = false;
-    var dump: any;
-    if (!Module['print']) Module['print'] = (TRY_USE_DUMP && (typeof(dump) !== "undefined") ? (function(x: any) {
+    if (!Module['print']) Module['print'] = (TRY_USE_DUMP && (typeof(dump) !== "undefined") ? (function(x) {
       dump(x);
-    }) : (function(x: any) {
+    }) : (function(x) {
       // self.postMessage(x); // enable this if you want stdout to be sent as messages
     }));
   }
 
-  // if (ENVIRONMENT_IS_WORKER) {
-  //   Module['load'] = importScripts;
-  // }
+  if (ENVIRONMENT_IS_WORKER) {
+    Module['load'] = importScripts;
+  }
 
-  // if (typeof Module['setWindowTitle'] === 'undefined') {
-  //   Module['setWindowTitle'] = function(title) { document.title = title };
-  // }
+  if (typeof Module['setWindowTitle'] === 'undefined') {
+    Module['setWindowTitle'] = function(title) { document.title = title };
+  }
 }
 else {
   // Unreachable because SHELL is dependant on the others
   throw 'Unknown runtime environment. Where are we?';
 }
 
-// function globalEval(x) {
-//   eval.call(null, x);
-// }
-// if (!Module['load'] && Module['read']) {
-//   Module['load'] = function load(f) {
-//     globalEval(Module['read'](f));
-//   };
-// }
+function globalEval(x) {
+  eval.call(null, x);
+}
+if (!Module['load'] && Module['read']) {
+  Module['load'] = function load(f) {
+    globalEval(Module['read'](f));
+  };
+}
 if (!Module['print']) {
   Module['print'] = function(){};
 }
@@ -237,7 +118,7 @@ if (!Module['thisProgram']) {
   Module['thisProgram'] = './this.program';
 }
 if (!Module['quit']) {
-  Module['quit'] = function(status: number, toThrow: Error) {
+  Module['quit'] = function(status, toThrow) {
     throw toThrow;
   }
 }
@@ -280,8 +161,6 @@ moduleOverrides = undefined;
 // Runtime code shared with compiler
 //========================================
 
-let tempRet0 = 0;
-
 var Runtime = {
   setTempRet0: function (value) {
     tempRet0 = value;
@@ -293,10 +172,10 @@ var Runtime = {
   stackSave: function () {
     return STACKTOP;
   },
-  stackRestore: function (stackTop: number) {
+  stackRestore: function (stackTop) {
     STACKTOP = stackTop;
   },
-  getNativeTypeSize: function (type: string) {
+  getNativeTypeSize: function (type) {
     switch (type) {
       case 'i1': case 'i8': return 1;
       case 'i16': return 2;
@@ -317,11 +196,11 @@ var Runtime = {
       }
     }
   },
-  getNativeFieldSize: function (type: string) {
+  getNativeFieldSize: function (type) {
     return Math.max(Runtime.getNativeTypeSize(type), Runtime.QUANTUM_SIZE);
   },
   STACK_ALIGN: 16,
-  prepVararg: function (ptr: number, type: string) {
+  prepVararg: function (ptr, type) {
     if (type === 'double' || type === 'i64') {
       // move so the load is aligned
       if (ptr & 7) {
@@ -333,7 +212,7 @@ var Runtime = {
     }
     return ptr;
   },
-  getAlignSize: function (type: string, size: number, vararg: boolean) {
+  getAlignSize: function (type, size, vararg) {
     // we align i64s and doubles on 64-bit boundaries, unlike x86
     if (!vararg && (type == 'i64' || type == 'double')) return 8;
     if (!type) return Math.min(size, 8); // align structures internally to 64 bits
@@ -396,7 +275,7 @@ var Runtime = {
     }
     return sigCache[func];
   },
-  getCompilerSetting: function (name: string) {
+  getCompilerSetting: function (name) {
     throw 'You must build with -s RETAIN_COMPILER_SETTINGS=1 for Runtime.getCompilerSetting or emscripten_get_compiler_setting to work';
   },
   stackAlloc: function (size) { var ret = STACKTOP;STACKTOP = (STACKTOP + size)|0;STACKTOP = (((STACKTOP)+15)&-16);(assert((((STACKTOP|0) < (STACK_MAX|0))|0))|0); return ret; },
@@ -422,7 +301,8 @@ Module["Runtime"] = Runtime;
 var ABORT = 0; // whether we are quitting the application. no code should run after this. set in exit() and abort()
 var EXITSTATUS = 0;
 
-function assert(condition: any, text?: string) {
+/** @type {function(*, string=)} */
+function assert(condition, text) {
   if (!condition) {
     abort('Assertion failed: ' + text);
   }
@@ -581,7 +461,7 @@ Module["ccall"] = ccall;
 Module["cwrap"] = cwrap;
 
 /** @type {function(number, number, string, boolean=)} */
-function setValue(ptr: number, value: number, type: string, noSafe?: boolean) {
+function setValue(ptr, value, type, noSafe) {
   type = type || 'i8';
   if (type.charAt(type.length-1) === '*') type = 'i32'; // pointers are 32-bit
     switch(type) {
@@ -598,7 +478,7 @@ function setValue(ptr: number, value: number, type: string, noSafe?: boolean) {
 Module["setValue"] = setValue;
 
 /** @type {function(number, string, boolean=)} */
-function getValue(ptr: number, type: string, noSafe?: boolean) {
+function getValue(ptr, type, noSafe) {
   type = type || 'i8';
   if (type.charAt(type.length-1) === '*') type = 'i32'; // pointers are 32-bit
     switch(type) {
@@ -615,13 +495,6 @@ function getValue(ptr: number, type: string, noSafe?: boolean) {
 }
 Module["getValue"] = getValue;
 
-enum AllocMode {
-  ALLOC_NORMAL = 0; // Tries to use _malloc()
-  ALLOC_STACK = 1; // Lives for the duration of the current function call
-  ALLOC_STATIC = 2; // Cannot be freed
-  ALLOC_DYNAMIC = 3; // Cannot be freed except through sbrk
-  ALLOC_NONE = 4; // Do not allocate
-}
 var ALLOC_NORMAL = 0; // Tries to use _malloc()
 var ALLOC_STACK = 1; // Lives for the duration of the current function call
 var ALLOC_STATIC = 2; // Cannot be freed
@@ -647,14 +520,7 @@ Module["ALLOC_NONE"] = ALLOC_NONE;
 //         ignored.
 // @allocator: How to allocate memory, see ALLOC_*
 /** @type {function((TypedArray|Array<number>|number), string, number, number=)} */
-type TypedIntArray =
-  Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array;
-type IntArray = TypedIntArray | Array<number>;
-type TypedArray =
-  Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array |
-  Float32Array | Float64Array;
-type NumericArray = TypedArray | Array<number>;
-function allocate(slab: NumericArray | number, types, allocator: number, ptr) {
+function allocate(slab, types, allocator, ptr) {
   var zeroinit, size;
   if (typeof slab === 'number') {
     zeroinit = true;
@@ -728,7 +594,7 @@ function allocate(slab: NumericArray | number, types, allocator: number, ptr) {
 Module["allocate"] = allocate;
 
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
-function getMemory(size: number) {
+function getMemory(size) {
   if (!staticSealed) return Runtime.staticAlloc(size);
   if (!runtimeInitialized) return Runtime.dynamicAlloc(size);
   return _malloc(size);
@@ -773,7 +639,7 @@ Module["Pointer_stringify"] = Pointer_stringify;
 // Given a pointer 'ptr' to a null-terminated ASCII-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
-function AsciiToString(ptr: number) {
+function AsciiToString(ptr) {
   var str = '';
   while (1) {
     var ch = HEAP8[((ptr++)>>0)];
@@ -786,7 +652,7 @@ Module["AsciiToString"] = AsciiToString;
 // Copies the given Javascript String object 'str' to the emscripten HEAP at address 'outPtr',
 // null-terminated and encoded in ASCII form. The copy will require at most str.length+1 bytes of space in the HEAP.
 
-function stringToAscii(str: string, outPtr: number) {
+function stringToAscii(str, outPtr) {
   return writeAsciiToMemory(str, outPtr, false);
 }
 Module["stringToAscii"] = stringToAscii;
@@ -794,9 +660,8 @@ Module["stringToAscii"] = stringToAscii;
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the given array that contains uint8 values, returns
 // a copy of that string as a Javascript String object.
 
-declare let TextDecoder: any;
 var UTF8Decoder = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined;
-function UTF8ArrayToString(u8Array: Uint8Array, idx: number) {
+function UTF8ArrayToString(u8Array, idx) {
   var endPtr = idx;
   // TextDecoder needs to know the byte length in advance, it doesn't stop on null terminator by itself.
   // Also, use the length info to avoid running tiny strings through TextDecoder, since .subarray() allocates garbage.
@@ -846,7 +711,7 @@ Module["UTF8ArrayToString"] = UTF8ArrayToString;
 // Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the emscripten HEAP, returns
 // a copy of that string as a Javascript String object.
 
-function UTF8ToString(ptr: number) {
+function UTF8ToString(ptr) {
   return UTF8ArrayToString(HEAPU8,ptr);
 }
 Module["UTF8ToString"] = UTF8ToString;
@@ -1180,15 +1045,24 @@ function alignUp(x, multiple) {
 }
 
 var HEAP,
-  buffer: ArrayBuffer,
-  HEAP8: Int8Array,
-  HEAPU8: Uint8Array,
-  HEAP16: Int16Array,
-  HEAPU16: Uint16Array,
-  HEAP32: Int32Array,
-  HEAPU32: Uint32Array,
-  HEAPF32: Float32Array,
-  HEAPF64: Float64Array;
+/** @type {ArrayBuffer} */
+  buffer,
+/** @type {Int8Array} */
+  HEAP8,
+/** @type {Uint8Array} */
+  HEAPU8,
+/** @type {Int16Array} */
+  HEAP16,
+/** @type {Uint16Array} */
+  HEAPU16,
+/** @type {Int32Array} */
+  HEAP32,
+/** @type {Uint32Array} */
+  HEAPU32,
+/** @type {Float32Array} */
+  HEAPF32,
+/** @type {Float64Array} */
+  HEAPF64;
 
 function updateGlobalBuffer(buf) {
   Module['buffer'] = buffer = buf;
@@ -1205,9 +1079,9 @@ function updateGlobalBufferViews() {
   Module['HEAPF64'] = HEAPF64 = new Float64Array(buffer);
 }
 
-var STATIC_BASE, STATICTOP: Int, staticSealed: boolean; // static area
-var STACK_BASE, STACKTOP: Int, STACK_MAX: Int; // stack area
-var DYNAMIC_BASE, DYNAMICTOP_PTR: Int; // dynamic area handled by sbrk
+var STATIC_BASE, STATICTOP, staticSealed; // static area
+var STACK_BASE, STACKTOP, STACK_MAX; // stack area
+var DYNAMIC_BASE, DYNAMICTOP_PTR; // dynamic area handled by sbrk
 
   STATIC_BASE = STATICTOP = STACK_BASE = STACKTOP = STACK_MAX = DYNAMIC_BASE = DYNAMICTOP_PTR = 0;
   staticSealed = false;
@@ -1228,7 +1102,7 @@ function checkStackCookie() {
   if (HEAP32[0] !== 0x63736d65 /* 'emsc' */) throw 'Runtime error: The application has corrupted its heap memory area (address zero)!';
 }
 
-function abortStackOverflow(allocSize: Int) {
+function abortStackOverflow(allocSize) {
   abort('Stack overflow! Attempted to allocate ' + allocSize + ' bytes on the stack, but stack has only ' + (STACK_MAX - Module['asm'].stackSave() + allocSize) + ' bytes available!');
 }
 
@@ -1277,7 +1151,7 @@ function getTotalMemory() {
 }
 
 // Endianness check (note: assumes compiler arch was little-endian)
-HEAP32[0] = 0x63736d65; /* 'emsc' */
+  HEAP32[0] = 0x63736d65; /* 'emsc' */
 HEAP16[1] = 0x6373;
 if (HEAPU8[2] !== 0x73 || HEAPU8[3] !== 0x63) throw 'Runtime error: expected the system to be little-endian!';
 
@@ -1292,14 +1166,9 @@ Module['HEAPU32'] = HEAPU32;
 Module['HEAPF32'] = HEAPF32;
 Module['HEAPF64'] = HEAPF64;
 
-interface ExplicitCallback {
-  arg: any;
-  func: number | ((arg: any) => void);
-}
-type Callback = (() => void) | ExplicitCallback;
-function callRuntimeCallbacks(callbacks: Callback[]) {
+function callRuntimeCallbacks(callbacks) {
   while(callbacks.length > 0) {
-    var callback = callbacks.shift()!;
+    var callback = callbacks.shift();
     if (typeof callback == 'function') {
       callback();
       continue;
@@ -1317,11 +1186,11 @@ function callRuntimeCallbacks(callbacks: Callback[]) {
   }
 }
 
-var __ATPRERUN__: Callback[]  = []; // functions called before the runtime is initialized
-var __ATINIT__: Callback[]    = []; // functions called during startup
-var __ATMAIN__: Callback[]    = []; // functions called when main() is to be run
-var __ATEXIT__: Callback[]    = []; // functions called during shutdown
-var __ATPOSTRUN__: Callback[] = []; // functions called after the runtime has exited
+var __ATPRERUN__  = []; // functions called before the runtime is initialized
+var __ATINIT__    = []; // functions called during startup
+var __ATMAIN__    = []; // functions called when main() is to be run
+var __ATEXIT__    = []; // functions called during shutdown
+var __ATPOSTRUN__ = []; // functions called after the runtime has exited
 
 var runtimeInitialized = false;
 var runtimeExited = false;
@@ -1368,27 +1237,27 @@ function postRun() {
   callRuntimeCallbacks(__ATPOSTRUN__);
 }
 
-function addOnPreRun(cb: Callback) {
+function addOnPreRun(cb) {
   __ATPRERUN__.unshift(cb);
 }
 Module["addOnPreRun"] = addOnPreRun;
 
-function addOnInit(cb: Callback) {
+function addOnInit(cb) {
   __ATINIT__.unshift(cb);
 }
 Module["addOnInit"] = addOnInit;
 
-function addOnPreMain(cb: Callback) {
+function addOnPreMain(cb) {
   __ATMAIN__.unshift(cb);
 }
 Module["addOnPreMain"] = addOnPreMain;
 
-function addOnExit(cb: Callback) {
+function addOnExit(cb) {
   __ATEXIT__.unshift(cb);
 }
 Module["addOnExit"] = addOnExit;
 
-function addOnPostRun(cb: Callback) {
+function addOnPostRun(cb) {
   __ATPOSTRUN__.unshift(cb);
 }
 Module["addOnPostRun"] = addOnPostRun;
@@ -1396,7 +1265,7 @@ Module["addOnPostRun"] = addOnPostRun;
 // Tools
 
 /** @type {function(string, boolean=, number=)} */
-function intArrayFromString(stringy, dontAddNull: boolean, length: number) {
+function intArrayFromString(stringy, dontAddNull, length) {
   var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
   var u8array = new Array(len);
   var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
@@ -1405,7 +1274,7 @@ function intArrayFromString(stringy, dontAddNull: boolean, length: number) {
 }
 Module["intArrayFromString"] = intArrayFromString;
 
-function intArrayToString(array: IntArray) {
+function intArrayToString(array) {
   var ret = [];
   for (var i = 0; i < array.length; i++) {
     var chr = array[i];
@@ -1446,7 +1315,7 @@ function writeArrayToMemory(array, buffer) {
 }
 Module["writeArrayToMemory"] = writeArrayToMemory;
 
-function writeAsciiToMemory(str: string, buffer: number, dontAddNull: boolean) {
+function writeAsciiToMemory(str, buffer, dontAddNull) {
   for (var i = 0; i < str.length; ++i) {
     assert(str.charCodeAt(i) === str.charCodeAt(i)&0xff);
     HEAP8[((buffer++)>>0)]=str.charCodeAt(i);
@@ -1638,7 +1507,7 @@ Module['FS_createDataFile'] = FS.createDataFile;
 Module['FS_createPreloadedFile'] = FS.createPreloadedFile;
 
 
-function integrateWasmJS(Module: any) {
+function integrateWasmJS(Module) {
   // wasm.js has several methods for creating the compiled code module here:
   //  * 'native-wasm' : use native WebAssembly support in the browser
   //  * 'interpret-s-expr': load s-expression code from a .wast and interpret
@@ -1655,14 +1524,14 @@ function integrateWasmJS(Module: any) {
   var method = Module['wasmJSMethod'] || 'native-wasm';
   Module['wasmJSMethod'] = method;
 
-  // var wasmTextFile = Module['wasmTextFile'] || 'hello.wast';
-  var wasmBinaryFile = Module.wasmBinaryFile;
-  // var asmjsCodeFile = Module['asmjsCodeFile'] || 'hello.temp.asm.js';
-
+  var wasmTextFile;
+  var wasmBinaryFile = Module['wasmBinaryFile'];
+  var asmjsCodeFile;
+  
   if (typeof Module['locateFile'] === 'function') {
-    // wasmTextFile = Module['locateFile'](wasmTextFile);
+    wasmTextFile = Module['locateFile'](wasmTextFile);
     wasmBinaryFile = Module['locateFile'](wasmBinaryFile);
-    // asmjsCodeFile = Module['locateFile'](asmjsCodeFile);
+    asmjsCodeFile = Module['locateFile'](asmjsCodeFile);
   }
 
   // utilities
@@ -1700,7 +1569,7 @@ function integrateWasmJS(Module: any) {
     'parent': Module // Module inside wasm-js.cpp refers to wasm-js.cpp; this allows access to the outside program.
   };
 
-  var exports: any = null;
+  var exports = null;
 
   function lookupImport(mod, base) {
     var lookup = info;
@@ -1797,23 +1666,23 @@ function integrateWasmJS(Module: any) {
 
   // do-method functions
 
-  // function doJustAsm(global, env, providedBuffer) {
-  //   // if no Module.asm, or it's the method handler helper (see below), then apply
-  //   // the asmjs
-  //   if (typeof Module['asm'] !== 'function' || Module['asm'] === methodHandler) {
-  //     if (!Module['asmPreload']) {
-  //       // you can load the .asm.js file before this, to avoid this sync xhr and eval
-  //       eval(Module['read'](asmjsCodeFile)); // set Module.asm
-  //     } else {
-  //       Module['asm'] = Module['asmPreload'];
-  //     }
-  //   }
-  //   if (typeof Module['asm'] !== 'function') {
-  //     Module['printErr']('asm evalling did not set the module properly');
-  //     return false;
-  //   }
-  //   return Module['asm'](global, env, providedBuffer);
-  // }
+  function doJustAsm(global, env, providedBuffer) {
+    // if no Module.asm, or it's the method handler helper (see below), then apply
+    // the asmjs
+    if (typeof Module['asm'] !== 'function' || Module['asm'] === methodHandler) {
+      if (!Module['asmPreload']) {
+        // you can load the .asm.js file before this, to avoid this sync xhr and eval
+        eval(Module['read'](asmjsCodeFile)); // set Module.asm
+      } else {
+        Module['asm'] = Module['asmPreload'];
+      }
+    }
+    if (typeof Module['asm'] !== 'function') {
+      Module['printErr']('asm evalling did not set the module properly');
+      return false;
+    }
+    return Module['asm'](global, env, providedBuffer);
+  }
 
   function doNativeWasm(global, env, providedBuffer) {
     if (typeof WebAssembly !== 'object') {
@@ -1869,71 +1738,71 @@ function integrateWasmJS(Module: any) {
     return {}; // no exports yet; we'll fill them in later
   }
 
-  // function doWasmPolyfill(global, env, providedBuffer, method) {
-  //   if (typeof WasmJS !== 'function') {
-  //     Module['printErr']('WasmJS not detected - polyfill not bundled?');
-  //     return false;
-  //   }
+  function doWasmPolyfill(global, env, providedBuffer, method) {
+    if (typeof WasmJS !== 'function') {
+      Module['printErr']('WasmJS not detected - polyfill not bundled?');
+      return false;
+    }
 
-  //   // Use wasm.js to polyfill and execute code in a wasm interpreter.
-  //   var wasmJS = WasmJS({});
+    // Use wasm.js to polyfill and execute code in a wasm interpreter.
+    var wasmJS = WasmJS({});
 
-  //   // XXX don't be confused. Module here is in the outside program. wasmJS is the inner wasm-js.cpp.
-  //   wasmJS['outside'] = Module; // Inside wasm-js.cpp, Module['outside'] reaches the outside module.
+    // XXX don't be confused. Module here is in the outside program. wasmJS is the inner wasm-js.cpp.
+    wasmJS['outside'] = Module; // Inside wasm-js.cpp, Module['outside'] reaches the outside module.
 
-  //   // Information for the instance of the module.
-  //   wasmJS['info'] = info;
+    // Information for the instance of the module.
+    wasmJS['info'] = info;
 
-  //   wasmJS['lookupImport'] = lookupImport;
+    wasmJS['lookupImport'] = lookupImport;
 
-  //   assert(providedBuffer === Module['buffer']); // we should not even need to pass it as a 3rd arg for wasm, but that's the asm.js way.
+    assert(providedBuffer === Module['buffer']); // we should not even need to pass it as a 3rd arg for wasm, but that's the asm.js way.
 
-  //   info.global = global;
-  //   info.env = env;
+    info.global = global;
+    info.env = env;
 
-  //   // polyfill interpreter expects an ArrayBuffer
-  //   assert(providedBuffer === Module['buffer']);
-  //   env['memory'] = providedBuffer;
-  //   assert(env['memory'] instanceof ArrayBuffer);
+    // polyfill interpreter expects an ArrayBuffer
+    assert(providedBuffer === Module['buffer']);
+    env['memory'] = providedBuffer;
+    assert(env['memory'] instanceof ArrayBuffer);
 
-  //   wasmJS['providedTotalMemory'] = Module['buffer'].byteLength;
+    wasmJS['providedTotalMemory'] = Module['buffer'].byteLength;
 
-  //   // Prepare to generate wasm, using either asm2wasm or s-exprs
-  //   var code;
-  //   if (method === 'interpret-binary') {
-  //     code = getBinary();
-  //   } else {
-  //     code = Module['read'](method == 'interpret-asm2wasm' ? asmjsCodeFile : wasmTextFile);
-  //   }
-  //   var temp;
-  //   if (method == 'interpret-asm2wasm') {
-  //     temp = wasmJS['_malloc'](code.length + 1);
-  //     wasmJS['writeAsciiToMemory'](code, temp);
-  //     wasmJS['_load_asm2wasm'](temp);
-  //   } else if (method === 'interpret-s-expr') {
-  //     temp = wasmJS['_malloc'](code.length + 1);
-  //     wasmJS['writeAsciiToMemory'](code, temp);
-  //     wasmJS['_load_s_expr2wasm'](temp);
-  //   } else if (method === 'interpret-binary') {
-  //     temp = wasmJS['_malloc'](code.length);
-  //     wasmJS['HEAPU8'].set(code, temp);
-  //     wasmJS['_load_binary2wasm'](temp, code.length);
-  //   } else {
-  //     throw 'what? ' + method;
-  //   }
-  //   wasmJS['_free'](temp);
+    // Prepare to generate wasm, using either asm2wasm or s-exprs
+    var code;
+    if (method === 'interpret-binary') {
+      code = getBinary();
+    } else {
+      code = Module['read'](method == 'interpret-asm2wasm' ? asmjsCodeFile : wasmTextFile);
+    }
+    var temp;
+    if (method == 'interpret-asm2wasm') {
+      temp = wasmJS['_malloc'](code.length + 1);
+      wasmJS['writeAsciiToMemory'](code, temp);
+      wasmJS['_load_asm2wasm'](temp);
+    } else if (method === 'interpret-s-expr') {
+      temp = wasmJS['_malloc'](code.length + 1);
+      wasmJS['writeAsciiToMemory'](code, temp);
+      wasmJS['_load_s_expr2wasm'](temp);
+    } else if (method === 'interpret-binary') {
+      temp = wasmJS['_malloc'](code.length);
+      wasmJS['HEAPU8'].set(code, temp);
+      wasmJS['_load_binary2wasm'](temp, code.length);
+    } else {
+      throw 'what? ' + method;
+    }
+    wasmJS['_free'](temp);
 
-  //   wasmJS['_instantiate'](temp);
+    wasmJS['_instantiate'](temp);
 
-  //   if (Module['newBuffer']) {
-  //     mergeMemory(Module['newBuffer']);
-  //     Module['newBuffer'] = null;
-  //   }
+    if (Module['newBuffer']) {
+      mergeMemory(Module['newBuffer']);
+      Module['newBuffer'] = null;
+    }
 
-  //   exports = wasmJS['asmExports'];
+    exports = wasmJS['asmExports'];
 
-  //   return exports;
-  // }
+    return exports;
+  }
 
   // We may have a preloaded value in Module.asm, save it
   Module['asmPreload'] = Module['asm'];
@@ -2039,7 +1908,6 @@ STATICTOP = STATIC_BASE + 5440;
 /* global initializers */  __ATINIT__.push();
 
 
-memoryInitializer = Module["wasmJSMethod"].indexOf("asmjs") >= 0 || Module["wasmJSMethod"].indexOf("interpret-asm2wasm") >= 0 ? "hello.html.mem" : null;
 
 
 
@@ -2640,9 +2508,6 @@ function exit(status, implicit) {
     if (Module['onExit']) Module['onExit'](status);
   }
 
-  if (ENVIRONMENT_IS_NODE) {
-    process['exit'](status);
-  }
   Module['quit'](status, new ExitStatus(status));
 }
 Module['exit'] = Module.exit = exit;
