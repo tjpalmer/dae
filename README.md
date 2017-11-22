@@ -32,9 +32,14 @@ I actually like JS, but runtime requirements go down without JS, and Wasm is
 easy to sandbox in browsers today (prohibit outbound net access) for security.
 
 
-## Baby steps
+## Implementation strategy
 
-I've got something that can run wasm and receive a call in js now.
+Emscripten has a lot of the functionality I need, but it also wants to include
+things I don't.
+I also want output in a constant form, not post-spliced.
+
+I'm currently modifying emscripten js output, but it might be better to fork
+emscripten to generate the modules directly that I need.
 
 
 ## Outbound messages
