@@ -1,12 +1,7 @@
-// Compiled for now at https://mbebenita.github.io/WasmExplorer/
-
-#include <stdio.h>
-
-extern "C" {
-  // void log(const char* message);
-  // void greet();
-}
+#include <iostream>
+#include <string>
 
 int main() {
-  printf("Hi!\n");
+  std::string greeting = "Hello, world!";
+  std::cout << greeting << std::endl;
 }
