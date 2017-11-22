@@ -70,50 +70,95 @@
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__em_runtime__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__em_runtime___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__em_runtime__);
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
+addEventListener('load', main);
 function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        let path = 'wasm/hello/hello.wasm';
-        let bytes = yield (yield fetch(path)).arrayBuffer();
-        let imports = {};
-        let api = makeImports(imports);
-        let { module, instance } = yield WebAssembly.instantiate(bytes, api);
-        console.log(module, instance);
-        let { exports: { greet, memory } } = instance;
-        imports.buffer = memory.buffer;
-        greet();
-    });
-}
-function makeImports(imports) {
-    return {
-        global: {},
-        env: {
-            log(address) {
-                let bytes = new Uint8Array(imports.buffer).slice(address);
-                let size = bytes.indexOf(0);
-                bytes = bytes.slice(0, size);
-                let string = new Array(...bytes).map(byte => String.fromCharCode(byte)).join('');
-                let div = document.createElement('div');
-                div.innerText = string;
-                document.body.appendChild(div);
-            },
-        }
+    var statusElement = document.getElementById('status');
+    var progressElement = document.getElementById('progress');
+    var spinnerElement = document.getElementById('spinner');
+    var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function () {
+            var element = document.getElementById('output');
+            if (element)
+                element.value = '';
+            return function (text) {
+                if (arguments.length > 1) {
+                    text = Array.prototype.slice.call(arguments).join(' ');
+                }
+                console.log(text);
+                if (element) {
+                    element.value += text + "\n";
+                    element.scrollTop = element.scrollHeight;
+                }
+            };
+        })(),
+        printErr: function (text) {
+            if (arguments.length > 1) {
+                text = Array.prototype.slice.call(arguments).join(' ');
+            }
+            console.log(text);
+        },
+        canvas: (function () {
+            var canvas = document.getElementById('canvas');
+            canvas.addEventListener("webglcontextlost", function (e) {
+                alert('WebGL context lost. You will need to reload the page.');
+                e.preventDefault();
+            }, false);
+            return canvas;
+        })(),
+        setStatus: function (text) {
+            var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+            var now = Date.now();
+            if (m && now - Date.now() < 30) {
+                return;
+            }
+            if (m) {
+                text = m[1];
+                progressElement.value = parseInt(m[2]) * 100;
+                progressElement.max = parseInt(m[4]) * 100;
+                progressElement.hidden = false;
+                spinnerElement.hidden = false;
+            }
+            else {
+                progressElement.removeAttribute('value');
+                progressElement.hidden = true;
+                if (!text)
+                    spinnerElement.style.display = 'none';
+            }
+            statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function (left) {
+            this.totalDependencies = Math.max(this.totalDependencies, left);
+            Module.setStatus(left ?
+                'Preparing... (' +
+                    (this.totalDependencies - left) + '/' + this.totalDependencies + ')' :
+                'All downloads complete.');
+        },
+        wasmBinaryFile: 'wasm/hello/hello.wasm',
     };
+    Module.setStatus('Downloading...');
+    window.onerror = function (event) {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        spinnerElement.style.display = 'none';
+        Module.setStatus = function (text) {
+            if (text)
+                Module.printErr('[post-exception status] ' + text);
+        };
+    };
+    Object(__WEBPACK_IMPORTED_MODULE_0__em_runtime__["a" /* runModule */])(Module);
 }
 
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = runModule;
+function runModule(Module) {
 
 // The Module object: Our interface to the outside world. We import
 // and export values on it, and do the work to get that through
@@ -2687,6 +2732,7 @@ run();
 
 
 
+}
 
 
 /***/ })

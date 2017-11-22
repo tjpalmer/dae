@@ -1,39 +1,101 @@
-import './em/runtime';
+import {runModule} from './em/runtime';
 
-// addEventListener('load', main);
+addEventListener('load', main);
 
-declare let WebAssembly: any;
+function main() {
+  var statusElement = document.getElementById('status')!;
+  var progressElement =
+    document.getElementById('progress') as HTMLProgressElement;
+  var spinnerElement = document.getElementById('spinner')!;
 
-async function main() {
-  let path = 'wasm/hello/hello.wasm';
-  // TODO Can't control content type from webpack dev server?
-  // let module = await WebAssembly.instantiateStreaming(fetch(path), api);
-  let bytes = await (await fetch(path)).arrayBuffer();
-  let imports: any = {};
-  let api = makeImports(imports);
-  let {module, instance} = await WebAssembly.instantiate(bytes, api);
-  console.log(module, instance);
-  let {exports: {greet, memory}} = instance;
-  imports.buffer = memory.buffer;
-  greet();
-}
+  var Module = {
+    preRun: [],
+    postRun: [],
+    print: (function() {
+      var element = document.getElementById('output') as HTMLTextAreaElement;
+      if (element) element.value = ''; // clear browser cache
+      return function(text: string) {
+        if (arguments.length > 1) {
+          text = Array.prototype.slice.call(arguments).join(' ');
+        }
+        // These replacements are necessary if you render to raw HTML
+        //text = text.replace(/&/g, "&amp;");
+        //text = text.replace(/</g, "&lt;");
+        //text = text.replace(/>/g, "&gt;");
+        //text = text.replace('\n', '<br>', 'g');
+        console.log(text);
+        if (element) {
+          element.value += text + "\n";
+          element.scrollTop = element.scrollHeight; // focus on bottom
+        }
+      };
+    })(),
+    printErr: function(text: string) {
+      if (arguments.length > 1) {
+        text = Array.prototype.slice.call(arguments).join(' ');
+      }
+      console.log(text);
+    },
+    canvas: (function() {
+      var canvas = document.getElementById('canvas')!;
 
-function makeImports(imports: any) {
-  return {
-    global: {},
-    env: {
-      log(address: number) {
-        // console.log(address);
-        let bytes = new Uint8Array(imports.buffer).slice(address);
-        let size = bytes.indexOf(0);
-        bytes = bytes.slice(0, size);
-        let string =
-          new Array(...bytes).map(byte => String.fromCharCode(byte)).join('');
-        let div = document.createElement('div');
-        div.innerText = string;
-        document.body.appendChild(div);
-      },
-      // memory: new WebAssembly.Memory({initial: 1}),
-    }
-  }
+      // As a default initial behavior, pop up an alert when webgl context is
+      // lost. To make your application robust, you may want to override this
+      // behavior before shipping!
+      // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+      canvas.addEventListener(
+        "webglcontextlost",
+        function(e) {
+          alert('WebGL context lost. You will need to reload the page.');
+          e.preventDefault();
+        },
+        false,
+      );
+
+      return canvas;
+    })(),
+    setStatus: function(text: string) {
+      var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+      var now = Date.now();
+      if (m && now - Date.now() < 30) {
+        // if this is a progress update, skip it if too soon
+        return;
+      }
+      if (m) {
+        text = m[1];
+        progressElement.value = parseInt(m[2])*100;
+        progressElement.max = parseInt(m[4])*100;
+        progressElement.hidden = false;
+        spinnerElement.hidden = false;
+      } else {
+        progressElement.removeAttribute('value');
+        progressElement.hidden = true;
+        if (!text) spinnerElement.style.display = 'none';
+      }
+      statusElement.innerHTML = text;
+    },
+    totalDependencies: 0,
+    monitorRunDependencies: function(left: number) {
+      this.totalDependencies = Math.max(this.totalDependencies, left);
+      Module.setStatus(
+        left ?
+          'Preparing... (' +
+            (this.totalDependencies-left) + '/' + this.totalDependencies + ')' :
+            'All downloads complete.'
+      );
+    },
+    wasmBinaryFile: 'wasm/hello/hello.wasm',
+  };
+  Module.setStatus('Downloading...');
+  window.onerror = function(event) {
+    // TODO do not warn on ok events like simulating an infinite loop or
+    // TODO exitStatus
+    Module.setStatus('Exception thrown, see JavaScript console');
+    spinnerElement.style.display = 'none';
+    Module.setStatus = function(text) {
+      if (text) Module.printErr('[post-exception status] ' + text);
+    };
+  };
+
+  runModule(Module);
 }
