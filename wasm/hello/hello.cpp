@@ -1,10 +1,12 @@
 // Compiled for now at https://mbebenita.github.io/WasmExplorer/
 
+#include <stdio.h>
+
 extern "C" {
-  void log(const char* message);
-  void greet();
+  // void log(const char* message);
+  // void greet();
 }
 
-void greet() {
-  log("Hi!");
+int main() {
+  printf("Hi!\n");
 }

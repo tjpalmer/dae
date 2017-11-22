@@ -74,6 +74,7 @@ to emit what I want):
 ```
 emcc -s WASM=1 hello.cpp -o hello.html -g
 emcc -s WASM=1 -s SIDE_MODULE=1 hello.cpp -o hello.wasm -g
+emrun --no_browser --port 8080 .
 ```
 
 Anyway, here are some references for both emsdk and llvm:
