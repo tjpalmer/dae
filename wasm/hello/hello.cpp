@@ -1,7 +1,9 @@
 #include <iostream>
+#include <memory>
 #include <string>
 
 int main() {
-  std::string greeting = "Hello, world!";
-  std::cout << greeting << std::endl;
+  auto number = std::make_unique<int>(42);
+  std::string greeting = "Hello";
+  std::cout << greeting << ": " << *number << std::endl;
 }

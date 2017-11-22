@@ -72,7 +72,7 @@ Here are some command lines for emscripten (and --emit-symbol-map doesn't seem
 to emit what I want):
 
 ```
-emcc -s WASM=1 hello.cpp -o hello.html -g
+emcc --std=c++14 -s WASM=1 hello.cpp -o hello.html -g
 emcc -s WASM=1 -s SIDE_MODULE=1 hello.cpp -o hello.wasm -g
 emrun --no_browser --port 8080 .
 ```
