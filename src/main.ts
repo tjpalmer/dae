@@ -84,6 +84,7 @@ function main() {
             'All downloads complete.'
       );
     },
+    // wasmBinaryFile: 'wasm/gl/triangle.wasm',
     wasmBinaryFile: 'wasm/hello/hello.wasm',
   };
   Module.setStatus('Downloading...');
