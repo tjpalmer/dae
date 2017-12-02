@@ -2,7 +2,7 @@
 
 ## Demos
 
-These two emsdk-compiled demos from from the same constrained js environment.
+These two emsdk-compiled demos run from the same constrained js environment.
 Only a small json descriptor and the wasm module itself is different:
 
 - C++ Hello World: https://tjpalmer.github.io/dae/#hello
@@ -99,10 +99,14 @@ But I've got emscripten working so far, or else I've used online llvm-based
 tools.
 I'll need to build llvm and other tools manually perhaps if I want to use wasm
 there perhaps.
-Two issues with emsdk so far include:
+Some issues with emsdk so far include:
 
 - Larger files
 - Symbols prefixed with underscore
+- Various low-level details that I extract from compiled js into descriptor
+  files
+
+I'm also still learning what is wasm and what is emscripten.
 
 Here are some command lines for emscripten (and --emit-symbol-map doesn't seem
 to emit what I want):
