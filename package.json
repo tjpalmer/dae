@@ -3,13 +3,16 @@
   "version": "0.0.1",
   "description": "Dae Application Environment",
   "devDependencies": {
+    "@types/node": "^8.0.53",
     "awesome-typescript-loader": "^3.4.0",
     "typescript": "^2.6.1",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.4"
   },
   "scripts": {
+    "build-scripts": "tsc --project scripts",
     "prepublish": "webpack --color",
-    "start": "webpack-dev-server --color -d --port 2018"
+    "start": "webpack-dev-server --color -d --port 2018",
+    "watch-scripts": "tsc --project scripts --watch"
   }
 }
