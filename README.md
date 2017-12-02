@@ -1,3 +1,23 @@
+# Demos
+
+These two emsdk-compiled demos from from the same constrained js environment.
+Only a small json descriptor and the wasm module itself is different:
+
+- C++ Hello World: https://tjpalmer.github.io/dae/#hello
+  ([source](https://github.com/tjpalmer/dae/blob/master/wasm/hello/hello.cpp),
+  [descriptor](https://github.com/tjpalmer/dae/blob/master/wasm/hello/dae.json),
+  [all files](https://github.com/tjpalmer/dae/tree/master/wasm/hello))
+- C Triangle GL: https://tjpalmer.github.io/dae/#gl
+  ([all files
+    with source from emscripten demos from OpenGL ES 2.0 Programming Guide](
+    https://github.com/tjpalmer/dae/tree/master/wasm/gl
+  ))
+
+While the GL demo uses ES 2.0, I'll probably require WebGL2/ES3 in the future.
+Browsers that can't cope, can't cope.
+
+More intro below.
+
 # Dae Application Environment
 
 This is meant to be a browser-based reference implementation of an environment
