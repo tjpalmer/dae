@@ -1,3 +1,7 @@
 /node_modules/
 /notes/
 /scripts/bin/
+
+# I have at least one wast added, but these are huge and aren't needed for demos
+# to run, so ignore others for now.
+*.wast

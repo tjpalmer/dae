@@ -1,14 +1,16 @@
+import {Descriptor} from './';
 import {runModule} from './em/runtime';
 
 addEventListener('load', main);
 
-function main() {
+async function main() {
   var statusElement = document.getElementById('status')!;
   var progressElement =
     document.getElementById('progress') as HTMLProgressElement;
   var spinnerElement = document.getElementById('spinner')!;
 
   var Module = {
+    descriptor: undefined as (Descriptor | undefined),
     preRun: [],
     postRun: [],
     print: (function() {
@@ -84,8 +86,7 @@ function main() {
             'All downloads complete.'
       );
     },
-    // wasmBinaryFile: 'wasm/gl/triangle.wasm',
-    wasmBinaryFile: 'wasm/hello/hello.wasm',
+    wasmBinaryFile: '',
   };
   Module.setStatus('Downloading...');
   window.onerror = function(event) {
@@ -98,5 +99,11 @@ function main() {
     };
   };
 
+  let appName = window.location.hash.replace('#', '') || 'hello';
+  let uri = `wasm/${appName}/dae.json`;
+  let descriptor = await (await fetch(uri)).json() as Descriptor;
+  Module.descriptor = descriptor;
+  // TODO Better relative pathing.
+  Module.wasmBinaryFile = uri.replace(/[^/]+$/, descriptor.main);
   runModule(Module);
 }

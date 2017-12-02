@@ -81,7 +81,7 @@ function main() {
   let js = readFileSync(jsName).toString();
   let descriptor = parseEmJs(js);
   let json = JSON.stringify(descriptor);
-  console.log(descriptor);
+  // console.log(descriptor);
   console.log(json);
 }
 

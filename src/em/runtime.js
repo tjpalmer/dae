@@ -1889,19 +1889,28 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = Runtime.GLOBAL_BASE;
 
-// TODO Is this dependent on the program?
-// TODO If so, how to generalize to arbitrary wasm?
-// TODO Export from wasm module?
-STATICTOP = STATIC_BASE + 24384;
+STATICTOP = STATIC_BASE + Module.descriptor.grit.staticBump;
 // /* global initializers */  __ATINIT__.push();
-/* global initializers */  __ATINIT__.push({ func: function() { __GLOBAL__I_000101() } }, { func: function() { __GLOBAL__sub_I_iostream_cpp() } });
+// /* global initializers */  __ATINIT__.push({ func: function() { __GLOBAL__I_000101() } }, { func: function() { __GLOBAL__sub_I_iostream_cpp() } });
+if (Module.descriptor.grit.atInits) {
+  for (let atInit of Module.descriptor.grit.atInits) {
+    // Force some namespacing on this for security.
+    if (!atInit.startsWith('__GLOBAL__')) {
+      throw new Error(`Attempt to add bad atInit ${atInit}`);
+    }
+    // Include the .asm to attempt to restrict to exported functions.
+    // TODO Make sure this can't reference functions other than exports from the
+    // TODO main wasm module!!!
+    __ATINIT__.push({func() {Module.asm[atInit]()}});
+  }
+}
 
 
 
 
 
 
-var STATIC_BUMP = 24384;
+var STATIC_BUMP = Module.descriptor.grit.staticBump;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -5608,11 +5617,8 @@ function nullFunc_iiiiid(x) { Module["printErr"]("Invalid function pointer calle
 
 function nullFunc_viiii(x) { Module["printErr"]("Invalid function pointer called with signature 'viiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-// Module['wasmTableSize'] = 19;
-// Module['wasmMaxTableSize'] = 19;
-
-Module['wasmTableSize'] = 17184;
-Module['wasmMaxTableSize'] = 17184;
+Module['wasmTableSize'] = Module.descriptor.grit.tableSize;
+Module['wasmMaxTableSize'] = Module.descriptor.grit.tableSize;
 
 function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
   try {

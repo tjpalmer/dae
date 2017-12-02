@@ -82,8 +82,9 @@ emcc -s WASM=1 -s SIDE_MODULE=1 hello.cpp -o hello.wasm -g
 emrun --no_browser --port 8080 .
 ```
 
-Anyway, here are some references for both emsdk and llvm:
+Anyway, here are some references for wasm, emsdk, and llvm:
 
+- https://github.com/WebAssembly/design/issues/1046
 - https://github.com/kripken/emscripten/wiki/WebAssembly
 - https://github.com/kripken/emscripten/issues/5384
 - https://github.com/wasdk/wasmexplorer-service/blob/master/scripts/compile.sh
