@@ -1,24 +1,31 @@
-# Demos
+# Dae Application Environment
+
+## Demos
 
 These two emsdk-compiled demos from from the same constrained js environment.
 Only a small json descriptor and the wasm module itself is different:
 
 - C++ Hello World: https://tjpalmer.github.io/dae/#hello
-  ([source](https://github.com/tjpalmer/dae/blob/master/wasm/hello/hello.cpp),
-  [descriptor](https://github.com/tjpalmer/dae/blob/master/wasm/hello/dae.json),
-  [all files](https://github.com/tjpalmer/dae/tree/master/wasm/hello))
+  - [Source](https://github.com/tjpalmer/dae/blob/master/wasm/hello/hello.cpp)
+  - [Descriptor](
+      https://github.com/tjpalmer/dae/blob/master/wasm/hello/dae.json
+    )
+  - [All files](https://github.com/tjpalmer/dae/tree/master/wasm/hello)
 - C Triangle GL: https://tjpalmer.github.io/dae/#gl
-  ([all files
-    with source from emscripten demos from OpenGL ES 2.0 Programming Guide](
-    https://github.com/tjpalmer/dae/tree/master/wasm/gl
-  ))
+  - From Emscripten demos from OpenGL ES 2.0 Programming Guide
+  - [Source](
+      https://github.com/tjpalmer/dae/blob/master/wasm/gl/Hello_Triangle.c
+    )
+  - [Descriptor](https://github.com/tjpalmer/dae/blob/master/wasm/gl/dae.json)
+  - [All files](https://github.com/tjpalmer/dae/tree/master/wasm/gl)
 
-While the GL demo uses ES 2.0, I'll probably require WebGL2/ES3 in the future.
-Browsers that can't cope, can't cope.
+For now, I haven't worked on the style or layout (or lots more).
+These currently are just a proof of concept.
 
 More intro below.
 
-# Dae Application Environment
+
+## Overview
 
 This is meant to be a browser-based reference implementation of an environment
 for distributing applications.
@@ -50,6 +57,10 @@ Key mechanisms to accomplish the goals:
 
 I actually like JS, but runtime requirements go down without JS, and Wasm is
 easy to sandbox in browsers today (prohibit outbound net access) for security.
+
+Also, while the GL demo uses ES 2.0, I'll probably require WebGL2/ES3 in the
+future.
+Browsers that can't cope, can't cope.
 
 
 ## Implementation strategy
