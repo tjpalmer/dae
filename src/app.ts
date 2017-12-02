@@ -6,6 +6,6 @@ export interface Descriptor {
 
 export interface Grit {
   atInits?: string[],
-  staticSize: number,
+  staticBump: number,
   tableSize: number,
 }
