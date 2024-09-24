@@ -1,5 +1,13 @@
 # Dae Application Environment
 
+## Update
+
+**UPDATE:** See [my Taca project](https://github.com/contextfreeinfo/taca) for my latest
+work in this area. It's a much better foundation and also has much more
+interesting demos.
+
+Old text follows below.
+
 ## Demos
 
 These two emsdk-compiled demos run from the same constrained js environment.
